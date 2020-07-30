@@ -1,0 +1,50 @@
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: 58bef48c33994700923297fae32054f9.azurecr.io
+        username: ${{ secrets.acr_58bef48c33994700923297fae32054f9_username}}
+        password: ${{ secrets.acr_58bef48c33994700923297fae32054f9_password}}
+    
+    - name: Build and push image to ACR
+      id: build-image
+      run: |
+        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t 58bef48c33994700923297fae32054f9.azurecr.io/diaggarw52fd:${{}}
+        docker push 58bef48c33994700923297fae32054f9.azurecr.io/diaggarw52fd:${{}}
+    
+    - uses: azure/k8s-set-context@v1
+      with:
+         kubeconfig: ${{ secrets.aks_diaggarw_kubeConfig}}
+      id: login
+    
+    - name: Create namespace
+      run: |
+        namespacePresent=`kubectl get namespace | grep diaggarwfc07 | wc -l`
+        if [ $namespacePresent -eq 0 ]
+        then
+            echo `kubectl create namespace diaggarwfc07`
+        fi
+
+    - uses: azure/k8s-create-secret@v1
+      with:
+        namespace: diaggarwfc07
+        container-registry-url: 58bef48c33994700923297fae32054f9.azurecr.io
+        container-registry-username: ${{ secrets.acr_58bef48c33994700923297fae32054f9_username}}
+        container-registry-password: ${{ secrets.acr_58bef48c33994700923297fae32054f9_password}}
+        secret-name: diaggarwdockerauth
+       
+    - uses: azure/k8s-deploy@v1
+      with:
+        namespace: diaggarwfc07
+        manifests: |
+          manifests/deployment-6806.yml
+          manifests/service-6806.yml
+        images: |
+          58bef48c33994700923297fae32054f9.azurecr.io/diaggarw52fd:${{}}
+        imagepullsecrets: |
+          diaggarwdockerauth
