@@ -1,0 +1,16 @@
+apiVersion : apps/v1beta1
+kind: Deployment
+metadata:
+  name: "petestaks-00ab"
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: "petestaks-00ab"
+    spec:
+      containers:
+        - name: "petestaks-00ab"
+          image: "myfirstproject342.azurecr.io/petestaks"
+          ports:
+          - containerPort: 80
