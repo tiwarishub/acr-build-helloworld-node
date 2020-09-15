@@ -44,6 +44,7 @@ jobs:
         manifests: |
           
           
+          
         images: |
           diaggarw.azurecr.io/diaggarw52fd:${{}}
         imagepullsecrets: |
