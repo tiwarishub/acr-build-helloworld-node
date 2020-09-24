@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: "aaaaabugbashprovsvcrouting-2bdb"
+    labels:
+        app: "aaaaabugbashprovsvcrouting-2bdb"
+spec:
+    type: LoadBalancer
+    ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+    selector:
+        app: "aaaaabugbashprovsvcrouting-2bdb"
