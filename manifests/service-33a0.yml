@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: "aaaatiwarishubaks-33a0"
+    labels:
+        app: "aaaatiwarishubaks-33a0"
+spec:
+    type: LoadBalancer
+    ports:
+    - port: 4000
+      targetPort: 4000
+      protocol: TCP
+      name: http
+    selector:
+        app: "aaaatiwarishubaks-33a0"
