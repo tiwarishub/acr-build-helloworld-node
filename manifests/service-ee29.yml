@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: "aaaatiwarishubaks-ee29"
+    labels:
+        app: "aaaatiwarishubaks-ee29"
+spec:
+    type: LoadBalancer
+    ports:
+    - port: 4000
+      targetPort: 4000
+      protocol: TCP
+      name: http
+    selector:
+        app: "aaaatiwarishubaks-ee29"
