@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "aaaatiwarishubaks-c2db"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "aaaatiwarishubaks-c2db"
+  template:
+    metadata:
+      labels:
+        app: "aaaatiwarishubaks-c2db"
+    spec:
+      containers:
+        - name: "aaaatiwarishubaks-c2db"
+          image: "aaaatiwarishubregistry.azurecr.io/aaaatiwarishubaksc2db"
+          ports:
+          - containerPort: 4000
