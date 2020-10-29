@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "aaaatiwarishubaks-fa7b"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "aaaatiwarishubaks-fa7b"
+  template:
+    metadata:
+      labels:
+        app: "aaaatiwarishubaks-fa7b"
+    spec:
+      containers:
+        - name: "aaaatiwarishubaks-fa7b"
+          image: "aaaatiwarishubregistry.azurecr.io/aaaatiwarishubaksfa7b"
+          ports:
+          - containerPort: 4000
