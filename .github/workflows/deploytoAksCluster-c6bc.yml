@@ -1,0 +1,50 @@
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: deepak2121.azurecr.io
+        username: ${{secrets.acr_deepak2121_username}}
+        password: ${{secrets.acr_deepak2121_password}}
+    
+    - name: Build and push image to ACR
+      id: build-image
+      run: |
+        docker build "$GITHUB_WORKSPACE/." -f  "Dockerfile" -t deepak2121.azurecr.io/tdedahaksc6bc:${{github.sha}}
+        docker push deepak2121.azurecr.io/tdedahaksc6bc:${{github.sha}}
+    
+    - uses: azure/k8s-set-context@v1
+      with:
+         kubeconfig: ${{secrets.aks_tdedahaks_kubeConfig}}
+      id: login
+    
+    - name: Create namespace
+      run: |
+        namespacePresent=`kubectl get namespace | grep tdedahaksc6bc | wc -l`
+        if [ $namespacePresent -eq 0 ]
+        then
+            echo `kubectl create namespace tdedahaksc6bc`
+        fi
+
+    - uses: azure/k8s-create-secret@v1
+      with:
+        namespace: tdedahaksc6bc
+        container-registry-url: deepak2121.azurecr.io
+        container-registry-username: ${{secrets.acr_deepak2121_username}}
+        container-registry-password: ${{secrets.acr_deepak2121_password}}
+        secret-name: tdedahaksdockerauth
+       
+    - uses: azure/k8s-deploy@v1.2
+      with:
+        namespace: tdedahaksc6bc
+        manifests: |
+          ./manifests/deployment-c6bc.yml
+          ./manifests/service-c6bc.yml
+        images: |
+          deepak2121.azurecr.io/tdedahaksc6bc:${{github.sha}}
+        imagepullsecrets: |
+          tdedahaksdockerauth
