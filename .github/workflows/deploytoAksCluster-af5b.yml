@@ -1,0 +1,50 @@
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: deepak2121.azurecr.io
+        username: ${{secrets.acr_deepak2121_username}}
+        password: ${{secrets.acr_deepak2121_password}}
+    
+    - name: Build and push image to ACR
+      id: build-image
+      run: |
+        docker build "$GITHUB_WORKSPACE/." -f  "Dockerfile" -t deepak2121.azurecr.io/tdedahaksaf5b:${{github.sha}}
+        docker push deepak2121.azurecr.io/tdedahaksaf5b:${{github.sha}}
+    
+    - uses: azure/k8s-set-context@v1
+      with:
+         kubeconfig: ${{secrets.aks_tdedahaks_kubeConfig}}
+      id: login
+    
+    - name: Create namespace
+      run: |
+        namespacePresent=`kubectl get namespace | grep tdedahaksaf5b | wc -l`
+        if [ $namespacePresent -eq 0 ]
+        then
+            echo `kubectl create namespace tdedahaksaf5b`
+        fi
+
+    - uses: azure/k8s-create-secret@v1
+      with:
+        namespace: tdedahaksaf5b
+        container-registry-url: deepak2121.azurecr.io
+        container-registry-username: ${{secrets.acr_deepak2121_username}}
+        container-registry-password: ${{secrets.acr_deepak2121_password}}
+        secret-name: tdedahaksdockerauth
+       
+    - uses: azure/k8s-deploy@v1.2
+      with:
+        namespace: tdedahaksaf5b
+        manifests: |
+          ./manifests/deployment-af5b.yml
+          ./manifests/service-af5b.yml
+        images: |
+          deepak2121.azurecr.io/tdedahaksaf5b:${{github.sha}}
+        imagepullsecrets: |
+          tdedahaksdockerauth
