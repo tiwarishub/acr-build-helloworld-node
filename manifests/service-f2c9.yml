@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: "tdedahaks-f2c9"
+    labels:
+        app: "tdedahaks-f2c9"
+spec:
+    type: LoadBalancer
+    ports:
+    - port: 4000
+      targetPort: 4000
+      protocol: TCP
+      name: http
+    selector:
+        app: "tdedahaks-f2c9"
