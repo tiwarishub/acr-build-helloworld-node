@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "tdedahaks-ecf2"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "tdedahaks-ecf2"
+  template:
+    metadata:
+      labels:
+        app: "tdedahaks-ecf2"
+    spec:
+      containers:
+        - name: "tdedahaks-ecf2"
+          image: "deepak2121.azurecr.io/tdedahaksecf2"
+          ports:
+          - containerPort: 4000
