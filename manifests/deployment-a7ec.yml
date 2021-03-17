@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "akskodey-a7ec"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "akskodey-a7ec"
+  template:
+    metadata:
+      labels:
+        app: "akskodey-a7ec"
+    spec:
+      containers:
+        - name: "akskodey-a7ec"
+          image: "akskodeyacr4.azurecr.io/akskodeya7ec"
+          ports:
+          - containerPort: 80
