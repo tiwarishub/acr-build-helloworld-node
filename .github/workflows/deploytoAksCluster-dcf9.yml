@@ -1,0 +1,51 @@
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: l5aks.azurecr.io
+        username: ${{secrets.acr_l5aks_username}}
+        password: ${{secrets.acr_l5aks_password}}
+    
+    - name: Build and push image to ACR
+      id: build-image
+      run: |
+        docker build "$GITHUB_WORKSPACE/." -f  "Dockerfile" -t l5aks.azurecr.io/akskodeydcf9:${{ github.sha }}
+        docker push l5aks.azurecr.io/akskodeydcf9:${{ github.sha }}
+    
+    - uses: azure/k8s-set-context@v1
+      with:
+         kubeconfig: ${{secrets.aks_akskodey_kubeConfig}}
+      id: login
+    
+    - name: Create namespace
+      run: |
+        namespacePresent=`kubectl get namespace | grep akskodeydcf9 | wc -l`
+        if [ $namespacePresent -eq 0 ]
+        then
+            echo `kubectl create namespace akskodeydcf9`
+        fi
+
+    - uses: azure/k8s-create-secret@v1
+      with:
+        namespace: akskodeydcf9
+        container-registry-url: l5aks.azurecr.io
+        container-registry-username: ${{secrets.acr_l5aks_username}}
+        container-registry-password: ${{secrets.acr_l5aks_password}}
+        secret-name: akskodeydockerauth
+       
+    - uses: azure/k8s-deploy@v1.2
+      with:
+        namespace: akskodeydcf9
+        manifests: |
+          ./manifests/deployment-dcf9.yml
+          ./manifests/service-dcf9.yml
+          ./manifests/ingress-dcf9.yml
+        images: |
+          l5aks.azurecr.io/akskodeydcf9:${{ github.sha }}
+        imagepullsecrets: |
+          akskodeydockerauth
